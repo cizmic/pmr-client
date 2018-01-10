@@ -1165,7 +1165,7 @@ class PingThread(threading.Thread):
 			wx.PostEvent(self._parent, evt)
 			break
 		
-		time.sleep(10)
+		time.sleep(2)
 		self.run()
 
 	def abort(self):
@@ -1204,7 +1204,7 @@ class GetMapLoopThread(threading.Thread):
 			evt = MapDataReceivedEvent(myEVT_MAPDATARECEIVED, -1, mapimgdat)
 			wx.PostEvent(self._parent, evt)
 			if doloop:
-				time.sleep(10)
+				time.sleep(5)
 				self.run()
 
 	def abort(self):
@@ -1252,8 +1252,8 @@ class WatchForChangesThread(threading.Thread):
 
 		try:
 			while True:
-				print("looking")
-				time.sleep(5)
+				#print("looking")
+				time.sleep(1)
 		except:
 			self.observer.stop()
 			print "ERROR"
@@ -1273,14 +1273,14 @@ class WatchForChangesEventHandler(FileSystemEventHandler):
 	def on_any_event(event):
 		if event.is_directory:
 			return None
-		elif event.event_type == 'created':
+		#elif event.event_type == 'created':
 			# Take any action here when a file is first created.
-			print "Received created event - %s." % event.src_path
-			e = {"path": event.src_path, "time": time.time()}
+			#print "Received created event - %s." % event.src_path
+			#e = {"path": event.src_path, "time": time.time()}
 			#stagedsaves.append(dict(e))
 		elif event.event_type == 'modified':
 			# Taken any action here when a file is modified.
-			print "Received modified event - %s." % event.src_path
+			#print "Received modified event - %s." % event.src_path
 			e = {"path": event.src_path, "time": time.time()}
 			stagedsaves.append(dict(e))
 		print stagedsaves
@@ -1338,7 +1338,7 @@ class PushChangesThread(threading.Thread):
 					wx.PostEvent(self._parent, evt)
 					stagedsaves = []
 
-		time.sleep(5)
+		time.sleep(1)
 		self.run() 
 
 	def abort(self):
