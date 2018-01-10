@@ -440,6 +440,8 @@ class PMRClientAuthenticator(wx.Dialog):
 
 	def __init__(self, parent, selectedregion):
 		super(PMRClientAuthenticator, self).__init__(parent, style= wx.SYSTEM_MENU | wx.CAPTION)
+		self.Bind(EVT_AUTHENTICATIONRESPONSE, self.onAuthenticationResponse)
+
 		self.region = selectedregion
 		self.InitUI()
 		self.Fit()
@@ -530,13 +532,21 @@ class PMRClientAuthenticator(wx.Dialog):
 		userv = self.usernametc.GetValue()
 		passv = self.passwordtc.GetValue()
 
-		resp = s.post(PMR_SERVERPATH + "authLogIn.php", data = {"username": userv, "password": passv, "region_id": self.region['id']})
+		worker = AuthenticationRequestThread(self, userv, passv, self.region["id"])
+		worker.setDaemon(True)
+		worker.start()
 
-		if resp.status_code == 200:
+
+	def onAuthenticationResponse(self, event):
+		#resp = s.post(PMR_SERVERPATH + "authLogIn.php", data = {"username": userv, "password": passv, "region_id": self.region['id']})
+
+		status_code = event.GetStatus()
+
+		if status_code == 200:
 			self.Authenticate()
-		elif resp.status_code == 401:
+		elif status_code == 401:
 			self.WarnError("Sorry, but your username or password is incorrect. Please try again.", "Login failed")
-		elif resp.status_code == 403:
+		elif status_code == 403:
 			self.WarnError("Sorry, but you are not allowed to access this region.", "Login failed")
 		else:
 			self.WarnError("Sorry, but PMR could not process this authentication request. Please try again.")
@@ -999,6 +1009,30 @@ class ServerStatusRequestThread(threading.Thread):
 		r = s.get(PMR_SERVERPATH+"getServerStatus.php")
 		notices = r.json()
 		evt = ServerStatusResponseEvent(myEVT_SERVERSTATUSRESPONSE, -1, notices)
+		wx.PostEvent(self._parent, evt)
+
+
+
+myEVT_AUTHENTICATIONRESPONSE = wx.NewEventType()
+EVT_AUTHENTICATIONRESPONSE = wx.PyEventBinder(myEVT_AUTHENTICATIONRESPONSE, 1)
+class AuthenticationResponseEvent(wx.PyCommandEvent):
+	def __init__(self, etype, eid, status):
+		wx.PyCommandEvent.__init__(self, etype, eid)
+		self._status = status
+	def GetStatus(self):
+		return self._status
+class AuthenticationRequestThread(threading.Thread):
+	def __init__(self, parent, username, password, regionid):
+		threading.Thread.__init__(self)
+		self._parent = parent
+		self._username = username
+		self._password = password
+		self._regionid = regionid
+
+	def run(self):
+		resp = s.post(PMR_SERVERPATH + "authLogIn.php", data = {"username": self._username, "password": self._password, "region_id": self._regionid})
+
+		evt = AuthenticationResponseEvent(myEVT_AUTHENTICATIONRESPONSE, -1, resp.status_code)
 		wx.PostEvent(self._parent, evt)
 
 
