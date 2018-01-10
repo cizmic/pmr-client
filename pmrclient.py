@@ -836,6 +836,8 @@ class PMRClientRegionInspector(wx.Frame):
 		resyncdialog.Destroy()
 
 	def onDisconnect(self, event = None):
+		self.resyncbtn.Disable()
+		self.disconnectbtn.Disable()
 		try:
 			r = s.get(PMR_SERVERPATH+"authLogOut.php")
 		except:
