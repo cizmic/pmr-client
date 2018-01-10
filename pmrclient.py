@@ -111,6 +111,7 @@ class PMRClient(wx.Frame):
 				except:
 					self.WarnError("The PMR Launcher could not start because it cannot write to its path\n\nPlease try again. If this error persists, try deleting the 'resources/config.ini' file.", "PMR Launcher could not start")
 					self.onClose()
+					self.onClose(None)
 
 	def InitUI(self):
 		panel = wx.Panel(self)
