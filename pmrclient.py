@@ -20,8 +20,6 @@ stagedsaves = []
 
 pmr_resources_path = "resources"
 
-pmr_server = "http://pmr.j5.io/"
-
 def_pmrpath = os.path.join(os.path.expanduser('~'),"Documents","SimCity 4","_PMR") + "\\"
 def_resw = 1280
 def_resh = 800
@@ -29,6 +27,7 @@ def_resh = 800
 PMR_LAUNCHPATH = None
 PMR_LAUNCHRESW = None
 PMR_LAUNCHRESH = None
+PMR_SERVERPATH = "http://pmr.j5.io/"
 
 def get_pmr_path(filename):
 	return os.path.join(pmr_resources_path, filename)
@@ -427,7 +426,7 @@ class PMRClientAuthenticator(wx.Dialog):
 		self.rememberpass.Bind(wx.EVT_CHECKBOX, self.OnRememberToggle)
 
 		hbox = wx.BoxSizer(wx.HORIZONTAL)
-		accountlink = wx.HyperlinkCtrl(panel, label='Need an account?', url='http://pmr.j5.io/?ref=needaccount')
+		accountlink = wx.HyperlinkCtrl(panel, label='Need an account?', url=PMR_SERVERPATH+'?ref=needaccount')
 		self.cancelbtn = wx.Button(panel, label='Cancel')
 		self.cancelbtn.Bind(wx.EVT_BUTTON, self.CancelAuthentication)
 		self.loginbtn = wx.Button(panel, label='Log in')
@@ -488,7 +487,7 @@ class PMRClientAuthenticator(wx.Dialog):
 		userv = self.usernametc.GetValue()
 		passv = self.passwordtc.GetValue()
 
-		resp = s.post("http://pmr.j5.io/authLogIn.php", data = {"username": userv, "password": passv, "region_id": self.region['id']})
+		resp = s.post(PMR_SERVERPATH + "authLogIn.php", data = {"username": userv, "password": passv, "region_id": self.region['id']})
 
 		if resp.status_code == 200:
 			self.Authenticate()
@@ -596,7 +595,7 @@ class PMRClientRegionDownloader(wx.Dialog):
 
 			destination = os.path.join(directory, str(city["lastsaveid"]).zfill(8) + ".sc4")
 
-			worker = BigDownloadThread(self, "http://pmr.j5.io/getSave.php?city_id=" + str(city["id"]), destination, city["lastsaveid"], city["lastsavehash"])
+			worker = BigDownloadThread(self, PMR_SERVERPATH+"getSave.php?city_id=" + str(city["id"]), destination, city["lastsaveid"], city["lastsavehash"])
 			worker.setDaemon(True)
 			worker.start()
 
@@ -699,7 +698,7 @@ class PMRClientRegionInspector(wx.Frame):
 		# f.SetWeight(wx.BOLD) 
 		# maptitletext.SetFont(f) 
 
-		req = s.get("http://pmr.j5.io/showRegionMap.php?region_id=" + str(self.region["id"]), stream=True)
+		req = s.get(PMR_SERVERPATH+"showRegionMap.php?region_id=" + str(self.region["id"]), stream=True)
 		mapimgdat = wx.ImageFromStream(StringIO.StringIO(req.content)).ConvertToBitmap()
 		self.mapimgctrl = wx.StaticBitmap(panel, -1, mapimgdat)
 
@@ -783,7 +782,7 @@ class PMRClientRegionInspector(wx.Frame):
 
 	def onDisconnect(self, event = None):
 		try:
-			r = s.get("http://pmr.j5.io/authLogOut.php")
+			r = s.get(PMR_SERVERPATH+"authLogOut.php")
 		except:
 			pass
 		self.pingworker.abort()
@@ -930,7 +929,7 @@ class ListingRequestThread(threading.Thread):
 		self._parent = parent
 
 	def run(self):
-		response = requests.get("http://pmr.j5.io/getRegionListing.php")
+		response = requests.get(PMR_SERVERPATH+"getRegionListing.php")
 		listings = response.json()
 		evt = ListingResponseEvent(myEVT_LISTINGRESPONSE, -1, listings)
 		wx.PostEvent(self._parent, evt)
@@ -952,7 +951,7 @@ class ServerStatusRequestThread(threading.Thread):
 		self._parent = parent
 
 	def run(self):
-		r = s.get("http://pmr.j5.io/getServerStatus.php")
+		r = s.get(PMR_SERVERPATH+"getServerStatus.php")
 		notices = r.json()
 		evt = ServerStatusResponseEvent(myEVT_SERVERSTATUSRESPONSE, -1, notices)
 		wx.PostEvent(self._parent, evt)
@@ -978,7 +977,7 @@ class CityListRequestThread(threading.Thread):
 		self._regionid = regionid
 
 	def run(self):
-		response = requests.get("http://pmr.j5.io/getRegionCities.php?region_id=" + str(self._regionid))
+		response = requests.get(PMR_SERVERPATH+"getRegionCities.php?region_id=" + str(self._regionid))
 		citylist = response.json()
 		evt = CityListResponseEvent(myEVT_CITYLISTRESPONSE, -1, citylist)
 		wx.PostEvent(self._parent, evt)
@@ -1053,7 +1052,7 @@ class ConfigBmpRequestThread(threading.Thread):
 		self._destination = destination
 
 	def run(self):
-		response = requests.get("http://pmr.j5.io/getRegionConfig.php?region_id=" + str(self._regionid))
+		response = requests.get(PMR_SERVERPATH+"getRegionConfig.php?region_id=" + str(self._regionid))
 		with open(self._destination, 'wb') as f:
 			f.write(response.content)
 		evt = ConfigBmpResponseEvent(myEVT_CONFIGBMPRESPONSE, -1, 1)
@@ -1080,7 +1079,7 @@ class PingThread(threading.Thread):
 
 	def run(self):
 		while self._runflag:
-			resp = s.get("http://pmr.j5.io/authPing.php")
+			resp = s.get(PMR_SERVERPATH+"authPing.php")
 			evt = PongEvent(myEVT_PONG, -1, resp.status_code)
 			wx.PostEvent(self._parent, evt)
 			break
@@ -1112,7 +1111,7 @@ class GetMapLoopThread(threading.Thread):
 
 	def run(self, doloop = True):
 		try:
-			req = s.get("http://pmr.j5.io/showRegionMap.php?region_id=" + str(self._regionid), stream=True)
+			req = s.get(PMR_SERVERPATH+"showRegionMap.php?region_id=" + str(self._regionid), stream=True)
 			req.raise_for_status()
 		#except requests.exceptions.HTTPError as err:
 		except:
@@ -1239,7 +1238,7 @@ class PushChangesThread(threading.Thread):
 				files = {'save': open(zfname, 'rb')}
 
 				try:
-					r = s.post("http://pmr.j5.io/pushChanges.php", files=files)
+					r = s.post(PMR_SERVERPATH+"pushChanges.php", files=files)
 					r.raise_for_status()
 				except requests.exceptions.HTTPError as err:
 					error = r.json()
