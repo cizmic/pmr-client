@@ -20,9 +20,15 @@ stagedsaves = []
 
 pmr_resources_path = "resources"
 
-def_pmrpath = os.path.join(os.path.expanduser('~'),"Documents","SimCity 4","_PMR")
+pmr_server = "http://pmr.j5.io/"
+
+def_pmrpath = os.path.join(os.path.expanduser('~'),"Documents","SimCity 4","_PMR") + "\\"
 def_resw = 1280
 def_resh = 800
+
+PMR_LAUNCHPATH = None
+PMR_LAUNCHRESW = None
+PMR_LAUNCHRESH = None
 
 def get_pmr_path(filename):
 	return os.path.join(pmr_resources_path, filename)
@@ -42,12 +48,16 @@ class PMRClient(wx.Frame):
 		super(PMRClient, self).__init__(parent, style=wx.CAPTION | wx.CLOSE_BOX)
 		self.Bind(EVT_SERVERSTATUSRESPONSE, self.onCheckServerReponse)
 		self.Bind(EVT_LISTINGRESPONSE, self.FinishRefreshList)
+		
 		self.InitUI()
 		self.Fit()
 		self.Centre()
 		self.Show()
+
+		self.Prep()
+
 		#self.CheckServer()
-		self.ShowFirstRun()
+		#self.ShowFirstRun()
 		self.StartRefreshList()
 
 		self.Bind(wx.EVT_CLOSE, self.onClose)
@@ -61,6 +71,47 @@ class PMRClient(wx.Frame):
 		dlg = wx.MessageDialog(parent, message, caption, wx.OK | wx.ICON_EXCLAMATION)
 		dlg.ShowModal()
 		dlg.Destroy()
+
+	def Prep(self):
+		global PMR_LAUNCHPATH
+		global PMR_LAUNCHRESW
+		global PMR_LAUNCHRESH
+		
+		# Load configuration file, or create one if it doesn't exist
+		configpath = get_pmr_path("config.ini")
+		try:
+			config = ConfigParser.RawConfigParser()
+			config.read(configpath)
+
+			PMR_LAUNCHPATH = config.get('launcher', 'path')
+			PMR_LAUNCHRESW = config.get('launcher', 'resw')
+			PMR_LAUNCHRESH = config.get('launcher', 'resh')
+		except:
+			config.add_section('launcher')
+			config.set('launcher', 'path', def_pmrpath)
+			config.set('launcher', 'resw', def_resw)
+			config.set('launcher', 'resh', def_resh)
+			
+			with open(configpath, 'wb') as configfile:
+				config.write(configfile)
+
+			PMR_LAUNCHPATH = def_pmrpath
+			PMR_LAUNCHRESW = def_resw
+			PMR_LAUNCHRESH = def_resh
+
+			self.ShowFirstRun()
+
+		# Create required directories
+		directories = ["PMRCache", "PMRPluginsCache", "PMRSalvage", "Regions", "Plugins"]
+
+		for directory in directories:
+			directorytocreate = os.path.join(PMR_LAUNCHPATH, directory)
+			if not os.path.exists(directorytocreate):
+				try:
+					os.makedirs(directorytocreate)
+				except:
+					self.WarnError("The PMR Launcher could not start because it cannot write to its path\n\nPlease try again. If this error persists, try deleting the 'resources/config.ini' file.", "PMR Launcher could not start")
+					self.onClose()
 
 	def InitUI(self):
 		panel = wx.Panel(self)
@@ -121,15 +172,15 @@ class PMRClient(wx.Frame):
 			self.Warn(str(notice))
 
 	def ShowFirstRun(self, event = None):
-		pmrpath = os.path.join(os.path.expanduser('~'),"Documents","SimCity 4","_PMR")
+		#pmrpath = os.path.join(os.path.expanduser('~'),"Documents","SimCity 4","_PMR")
 
-		if not os.path.exists(pmrpath):
-			os.makedirs(pmrpath)
-			firstrundialog = PMRClientFirstRun(None)
-			firstrundialog.ShowModal()
-			firstrundialog.Destroy()
-			return True
-		return False
+		#if not os.path.exists(pmrpath):
+		#os.makedirs(pmrpath)
+		firstrundialog = PMRClientFirstRun(None)
+		firstrundialog.ShowModal()
+		firstrundialog.Destroy()
+		#return True
+		#return False
 
 	def StartRefreshList(self, event = None):
 		self.infotext.SetLabel("Getting region list...")
@@ -173,7 +224,7 @@ class PMRClient(wx.Frame):
 			downloaddialog.Destroy()
 
 			if downloadresult == 1:
-				args = r'"C:\Program Files (x86)\Steam\Steam.exe" -applaunch 24780 -UserDir:"C:\Users\Julian\Documents\SimCity 4\_PMR\" -intro:off -w -CustomResolution:enabled -r1280x800x32'
+				args = r'"C:\Program Files (x86)\Steam\Steam.exe" -applaunch 24780 -UserDir:"' + PMR_LAUNCHPATH + '" -intro:off -w -CustomResolution:enabled -r' + str(PMR_LAUNCHRESW) + 'x' + str(PMR_LAUNCHRESH) + 'x32'
 				subprocess.call(args, shell=False)
 
 				regioninspector = PMRClientRegionInspector(None,self.selectedregion)
@@ -461,7 +512,7 @@ class PMRClientRegionDownloader(wx.Dialog):
 	def __init__(self, parent, selectedregion, refresher = False):
 		super(PMRClientRegionDownloader, self).__init__(parent, style= wx.SYSTEM_MENU | wx.CAPTION)
 		self.region = selectedregion;
-		self.regiondir = os.path.join(os.path.expanduser('~'),"Documents","SimCity 4","_PMR","Regions",self.region["name"])
+		self.regiondir = os.path.join(PMR_LAUNCHPATH,"Regions",self.region["name"])
 		self.refresher = refresher
 		self.InitUI()
 		self.Fit()
@@ -513,7 +564,7 @@ class PMRClientRegionDownloader(wx.Dialog):
 		self.progbar.SetValue(0)
 		self.progbar.SetRange(len(self.citylist))
 
-		regionsdirectory = os.path.join(os.path.expanduser('~'),"Documents","SimCity 4","_PMR","Regions")
+		regionsdirectory = os.path.join(PMR_LAUNCHPATH,"Regions")
 
 		if not os.path.exists(regionsdirectory):
 			os.makedirs(regionsdirectory)
@@ -528,7 +579,7 @@ class PMRClientRegionDownloader(wx.Dialog):
 			except Exception as e:
 				print(e)
 
-		directory = os.path.join(os.path.expanduser('~'),"Documents","SimCity 4","_PMR","Regions",self.region["name"])
+		directory = os.path.join(PMR_LAUNCHPATH,"Regions",self.region["name"])
 
 		if not os.path.isdir(directory):
 			os.makedirs(directory)
@@ -579,7 +630,7 @@ class PMRClientRegionDownloader(wx.Dialog):
 			self.DownloadSucceeded()
 
 		AuxConfig = ConfigParser.ConfigParser()
-		refreshregiondir = os.path.join(os.path.expanduser('~'),"Documents","SimCity 4","_PMR","Regions","ZZZRefreshAuxiliary")
+		refreshregiondir = os.path.join(PMR_LAUNCHPATH,"Regions","ZZZRefreshAuxiliary")
 		if not os.path.exists(refreshregiondir):
 			os.makedirs(refreshregiondir)
 		cfgfile = open(os.path.join(refreshregiondir,"region.ini"),'w')
@@ -678,7 +729,7 @@ class PMRClientRegionInspector(wx.Frame):
 		self.mapworker.setDaemon(True)
 		self.mapworker.start()
 
-		directory = os.path.join(os.path.expanduser('~'),"Documents","SimCity 4","_PMR","Regions",self.region["name"])
+		directory = os.path.join(PMR_LAUNCHPATH,"Regions",self.region["name"])
 		self.watchchangesworker = WatchForChangesThread(self, directory)
 		self.watchchangesworker.setDaemon(True)
 		self.watchchangesworker.start()
@@ -956,7 +1007,7 @@ class BigDownloadThread(threading.Thread):
 		self._savehash = savehash
 
 	def run(self):
-		cachedsavepath = os.path.join(os.path.expanduser('~'),"Documents","SimCity 4","_PMR","PMRCache",str(self._saveid).zfill(8) + ".sc4")
+		cachedsavepath = os.path.join(PMR_LAUNCHPATH,"PMRCache",str(self._saveid).zfill(8) + ".sc4")
 
 		print("### PATH")
 		print(os.path.exists(cachedsavepath))
