@@ -494,6 +494,8 @@ class PMRClientAuthenticator(wx.Dialog):
 			self.Authenticate()
 		elif resp.status_code == 401:
 			self.WarnError("Sorry, but your username or password is incorrect. Please try again.", "Login failed")
+		elif resp.status_code == 403:
+			self.WarnError("Sorry, but you are not allowed to access this region.", "Login failed")
 		else:
 			self.WarnError("Sorry, but PMR could not process this authentication request. Please try again.")
 
