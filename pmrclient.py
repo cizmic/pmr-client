@@ -23,11 +23,13 @@ pmr_resources_path = "resources"
 def_pmrpath = os.path.join(os.path.expanduser('~'),"Documents","SimCity 4","_PMR") + "\\"
 def_resw = 1280
 def_resh = 800
+def_sc4path = ""
 
 PMR_LAUNCHPATH = None
 PMR_LAUNCHRESW = None
 PMR_LAUNCHRESH = None
 PMR_SERVERPATH = "http://pmr.j5.io/"
+PMR_CUSTOMPATH = None
 
 def get_pmr_path(filename):
 	return os.path.join(pmr_resources_path, filename)
@@ -85,11 +87,14 @@ class PMRClient(wx.Frame):
 			PMR_LAUNCHPATH = config.get('launcher', 'path')
 			PMR_LAUNCHRESW = config.get('launcher', 'resw')
 			PMR_LAUNCHRESH = config.get('launcher', 'resh')
+			PMR_CUSTOMPATH = config.get('launcher', 'sc4path')
 		except:
+			config.remove_section('launcher')
 			config.add_section('launcher')
 			config.set('launcher', 'path', def_pmrpath)
 			config.set('launcher', 'resw', def_resw)
 			config.set('launcher', 'resh', def_resh)
+			config.set('launcher', 'sc4path', def_sc4path)
 			
 			with open(configpath, 'wb') as configfile:
 				config.write(configfile)
@@ -97,6 +102,7 @@ class PMRClient(wx.Frame):
 			PMR_LAUNCHPATH = def_pmrpath
 			PMR_LAUNCHRESW = def_resw
 			PMR_LAUNCHRESH = def_resh
+			PMR_CUSTOMPATH = def_sc4path
 
 			self.ShowFirstRun()
 
@@ -110,7 +116,6 @@ class PMRClient(wx.Frame):
 					os.makedirs(directorytocreate)
 				except:
 					self.WarnError("The PMR Launcher could not start because it cannot write to its path\n\nPlease try again. If this error persists, try deleting the 'resources/config.ini' file.", "PMR Launcher could not start")
-					self.onClose()
 					self.onClose(None)
 
 	def InitUI(self):
@@ -224,7 +229,28 @@ class PMRClient(wx.Frame):
 			downloaddialog.Destroy()
 
 			if downloadresult == 1:
-				args = r'"C:\Program Files (x86)\Steam\Steam.exe" -applaunch 24780 -UserDir:"' + PMR_LAUNCHPATH + '" -intro:off -w -CustomResolution:enabled -r' + str(PMR_LAUNCHRESW) + 'x' + str(PMR_LAUNCHRESH) + 'x32'
+				possiblepaths = [
+					os.path.join(os.sep, "Program Files (x86)\Maxis\SimCity 4 Deluxe\Apps\SimCity 4.exe"),
+					os.path.join(os.sep, "Program Files\Maxis\SimCity 4 Deluxe\Apps\SimCity 4.exe")
+				]
+
+				execpath = None
+
+				if os.path.exists(os.path.join(os.sep, "Program Files (x86)", "Steam", "steamapps", "common", "SimCity 4 Deluxe")):
+					execpath = r'"C:\Program Files (x86)\Steam\Steam.exe" -applaunch 24780'
+				else:
+					for possiblepath in possiblepaths:
+						if os.path.exists(possiblepath):
+							execpath = r'"' + possiblepath + '"'
+							break
+
+				if not execpath:
+					self.WarnError("SimCity 4 was not found\n\nThe PMR Launcher could not find your installation of SimCity 4. If you have installed it to a custom directory, please provide the full path to the 'SimCity 4.exe' file under 'SC4 Settings...'")
+					self.onClose(None)
+
+				args = r'' + execpath + ' -UserDir:"' + PMR_LAUNCHPATH + '" -intro:off -w -CustomResolution:enabled -r' + str(PMR_LAUNCHRESW) + 'x' + str(PMR_LAUNCHRESH) + 'x32'
+
+				#args = r'"C:\Program Files (x86)\Steam\Steam.exe" -applaunch 24780 -UserDir:"' + PMR_LAUNCHPATH + '" -intro:off -w -CustomResolution:enabled -r' + str(PMR_LAUNCHRESW) + 'x' + str(PMR_LAUNCHRESH) + 'x32'
 				subprocess.call(args, shell=False)
 
 				regioninspector = PMRClientRegionInspector(None,self.selectedregion)
@@ -284,6 +310,14 @@ class PMRClientSettings(wx.Dialog):
 		resolutioninfo.SetFont(font)
 		resolutioninfo.Wrap(300)
 
+		sc4pathlabel = wx.StaticText(panel, label='Path to \'SimCity 4.exe\':')
+		self.sc4pathtc = wx.TextCtrl(panel)
+		sc4pathinfo = wx.StaticText(panel, label="If the PMR Launcher cannot find 'SimCity 4.exe' in the most common installation paths, it will try using this value. You should only change this if you have installed SimCity 4 to a custom directory.")
+		font = sc4pathinfo.GetFont()
+		font.SetPointSize(8)
+		sc4pathinfo.SetFont(font)
+		sc4pathinfo.Wrap(300)
+
 		hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 		self.cancelbtn = wx.Button(panel, label='Cancel')
 		self.cancelbtn.Bind(wx.EVT_BUTTON, self.onCancel)
@@ -306,6 +340,12 @@ class PMRClientSettings(wx.Dialog):
 		vbox.Add((-1, 5))
 		vbox.Add(resolutioninfo, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
 		vbox.Add((-1, 25))
+		vbox.Add(sc4pathlabel, 0, wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, 10)
+		vbox.Add((-1, 5))
+		vbox.Add(self.sc4pathtc, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
+		vbox.Add((-1, 5))
+		vbox.Add(sc4pathinfo, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
+		vbox.Add((-1, 25))
 		vbox.Add(hbox2, 0, wx.EXPAND | wx.ALL, 10)
 
 		panel.SetSizer(vbox)
@@ -320,6 +360,7 @@ class PMRClientSettings(wx.Dialog):
 		self.pmrpathtc.SetValue(config.get('launcher', 'path'))
 		self.reswtc.SetValue(config.get('launcher', 'resw'))
 		self.reshtc.SetValue(config.get('launcher', 'resh'))
+		self.sc4pathtc.SetValue(config.get('launcher', 'sc4path'))
 
 	def onCancel(self, event):
 		self.Close(0)
@@ -357,6 +398,7 @@ class PMRClientSettings(wx.Dialog):
 		config.set('launcher', 'path', self.pmrpathtc.GetValue())
 		config.set('launcher', 'resw', self.reswtc.GetValue())
 		config.set('launcher', 'resh', self.reshtc.GetValue())
+		config.set('launcher', 'sc4path', self.sc4pathtc.GetValue())
 
 		with open(get_pmr_path("config.ini"), 'wb') as configfile:
 			config.write(configfile)
