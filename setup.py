@@ -32,7 +32,8 @@ setup(
 		"icon_resources": [(1, "resources/icon.ico")],
 		"name": "PMR Launcher",
 		"author": "Poppy Multiplayer Regions",
-		"version": "1.0.0"
+        "description": "PMR Launcher",
+		"version": "0.9.0"
 	}],
 	options={
 		"py2exe": {
