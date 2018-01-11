@@ -1191,9 +1191,6 @@ class ConfigBmpResponseEvent(wx.PyCommandEvent):
 
 	def GetValue(self):
 		return self._value
-
-
-
 class ConfigBmpRequestThread(threading.Thread):
 	def __init__(self, parent, regionid, destination):
 		threading.Thread.__init__(self)
@@ -1385,11 +1382,14 @@ class PushChangesThread(threading.Thread):
 					zf.write(save["path"], dname)
 				zf.close()
 
-				files = {'save': open(zfname, 'rb')}
+				#files = {'save': open(zfname, 'rb')}
 
 				try:
-					r = s.post(PMR_SERVERPATH+"pushChanges.php", files=files)
-					r.raise_for_status()
+					#r = s.post(PMR_SERVERPATH+"pushChanges.php", files=files)
+					
+					with open(zfname, 'rb') as f:
+						r = requests.post(PMR_SERVERPATH+"pushChanges.php", files={'save': f})
+						r.raise_for_status()
 				except requests.exceptions.HTTPError as err:
 					error = r.json()
 					code = error["code"]
@@ -1407,6 +1407,7 @@ class PushChangesThread(threading.Thread):
 					wx.PostEvent(self._parent, evt)
 					stagedsaves = []
 
+				os.remove(zfname)	
 		time.sleep(1)
 		self.run() 
 
