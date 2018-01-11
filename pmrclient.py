@@ -1371,7 +1371,7 @@ class PushChangesThread(threading.Thread):
 				if time.time() - save["time"] > 100 or not save["path"].endswith(".sc4"):
 					stagedsaves.pop(i)
 
-			if time.time() - mostrecent > 5 and len(stagedsaves) > 2:
+			if time.time() - mostrecent > 2 and len(stagedsaves) > 2:
 				sevt = PushChangesStartedEvent(myEVT_PUSHCHANGESSTARTED, -1)
 				wx.PostEvent(self._parent, sevt)
 
