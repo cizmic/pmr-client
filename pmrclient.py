@@ -256,6 +256,8 @@ class PMRClient(wx.Frame):
 
 				regioninspector = PMRClientRegionInspector(None,self.selectedregion)
 				self.Hide()
+			elif downloadresult == -1:
+				self.WarnError("The region couldn't be downloaded at this moment\n\nPlease try connecting again.", "Region download failed")
 
 		for x in xrange(0, self.regionlist.GetItemCount(), 1):
 			self.regionlist.Select(x, on=0)
