@@ -914,6 +914,8 @@ class PMRClientRegionInspector(wx.Frame):
 			if self._pushfails > 5:
 				#self.pushchangesworker.SalvageSaves()
 				self.WarnError("Sorry, but your last save could not be recognized by PMR\n\nTo ensure that your save won't be lost, we have moved it to the 'PMRSalvage' directory.\n\nPlease consult the manual for more information.")
+				for i,save in enumerate(stagedsaves):
+					shutil.copyfile(save["path"], os.path.join(PMR_LAUNCHPATH, "PMRSalvage", os.path.basename(os.path.normpath(save["path"]))))
 				self._pushfails = 0
 				self.pushchangesworker.FlushSaves()
 
