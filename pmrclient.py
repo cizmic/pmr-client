@@ -193,8 +193,9 @@ class PMRClient(wx.Frame):
 		self.regionlist.Disable()
 		self.refreshbtn.Disable()
 
-		worker = ListingRequestThread(self)
-		worker.start()
+		self.listworker = ListingRequestThread(self)
+		self.listworker.setDaemon(True)
+		self.listworker.start()
 
 	def FinishRefreshList(self, event = None):
 		self.listings = event.GetValue()
@@ -265,6 +266,7 @@ class PMRClient(wx.Frame):
 		settingsdialog.Destroy()
 
 	def onClose(self, event):
+		self.listworker.join(5)
 		wx.Exit()
 
 class PMRClientSettings(wx.Dialog):
