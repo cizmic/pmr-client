@@ -1388,7 +1388,7 @@ class PushChangesThread(threading.Thread):
 					#r = s.post(PMR_SERVERPATH+"pushChanges.php", files=files)
 					
 					with open(zfname, 'rb') as f:
-						r = requests.post(PMR_SERVERPATH+"pushChanges.php", files={'save': f})
+						r = s.post(PMR_SERVERPATH+"pushChanges.php", files={'save': f})
 						r.raise_for_status()
 				except requests.exceptions.HTTPError as err:
 					error = r.json()
