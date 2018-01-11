@@ -578,7 +578,9 @@ class PMRClientRegionDownloader(wx.Dialog):
 		self.Show()
 		self.Bind(EVT_CITYLISTRESPONSE, self.DownloadRegion)
 		self.Bind(EVT_PROGUPDATE, self.OnProgUpdate)
-		self.Bind(EVT_CONFIGBMPRESPONSE, self.MakeConfigFile)
+		#self.Bind(EVT_CONFIGBMPRESPONSE, self.MakeConfigFile)
+		self.Bind(EVT_CONFIGBMPRESPONSE, self.DownloadPlugins)
+		self.Bind(EVT_PLUGINSRESPONSE, self.onPluginsDownloaded)
 		self.GetCityList()
 
 	def WarnError(parent, message, caption = 'Error!'):
@@ -671,6 +673,26 @@ class PMRClientRegionDownloader(wx.Dialog):
 		worker = ConfigBmpRequestThread(self, self.region["id"], destination)
 		worker.setDaemon(True)
 		worker.start()
+
+	def DownloadPlugins(self, event = None):
+		if self.refresher:
+			self.MakeConfigFile()
+			return True
+
+		self.infotext.SetLabel("Synchronizing plugins...")
+
+		regionid = self.region["id"]
+		destination = os.path.join(PMR_LAUNCHPATH,"Plugins",str(regionid).zfill(8) + ".zip")
+		self.pluginszip = str(destination)
+
+		worker = PluginsDownloadThread(self, regionid, destination)
+		worker.setDaemon(True)
+		worker.start()
+
+	def onPluginsDownloaded(self, event):
+		plugins = zipfile.ZipFile(self.pluginszip)
+		plugins.extractall(os.path.join(PMR_LAUNCHPATH,"Plugins"))
+		self.MakeConfigFile()
 
 	def MakeConfigFile(self, event = None):
 		Config = ConfigParser.ConfigParser()
@@ -1115,6 +1137,46 @@ class BigDownloadThread(threading.Thread):
 		evt = ProgUpdateEvent(myEVT_PROGUPDATE, -1, 1)
 		wx.PostEvent(self._parent, evt)
 
+
+myEVT_PLUGINSRESPONSE = wx.NewEventType()
+EVT_PLUGINSRESPONSE = wx.PyEventBinder(myEVT_PLUGINSRESPONSE, 1)
+class PluginsResponseEvent(wx.PyCommandEvent):
+	def __init__(self, etype, eid, value=None):
+		wx.PyCommandEvent.__init__(self, etype, eid)
+		self._value = value
+
+	def GetValue(self):
+		return self._value
+class PluginsDownloadThread(threading.Thread):
+	def __init__(self, parent, regionid, destination):
+		threading.Thread.__init__(self)
+		self._parent = parent
+		self._regionid = regionid
+		self._destination = destination
+
+	def run(self):
+		cachedpluginspath = os.path.join(PMR_LAUNCHPATH,"PMRPluginsCache",str(self._regionid).zfill(8) + ".zip")
+		hashreq = s.get(PMR_SERVERPATH+"getPluginsHash.php?region_id="+str(self._regionid))
+		pluginshash = hashreq.text
+		url = PMR_SERVERPATH+"getPlugins.php?region_id="+str(self._regionid)
+
+
+		if os.path.exists(cachedpluginspath) and md5(cachedpluginspath) == pluginshash:
+			shutil.copyfile(cachedpluginspath, self._destination)
+			print("[PLUGINS] cached version okay!")
+		else:
+			print("[PLUGINS] using downloaded version!")
+			response = requests.get(url, stream=True)
+			handle = open(str(self._destination), "wb")
+			for chunk in response.iter_content(chunk_size=512):
+				if chunk:
+					handle.write(chunk)
+			handle.close()
+
+			shutil.copyfile(self._destination, cachedpluginspath)
+
+		evt = PluginsResponseEvent(myEVT_PLUGINSRESPONSE, -1, 1)
+		wx.PostEvent(self._parent, evt)
 
 
 myEVT_CONFIGBMPRESPONSE = wx.NewEventType()
