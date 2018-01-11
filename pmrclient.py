@@ -919,6 +919,7 @@ class PMRClientRegionInspector(wx.Frame):
 				self._pushfails = 0
 				self.pushchangesworker.FlushSaves()
 
+		self.MoveTopRight()
 		self.resyncbtn.Enable()
 		self.resyncbtn.SetLabel("Refresh Region")
 		self.disconnectbtn.Enable()
