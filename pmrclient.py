@@ -28,7 +28,7 @@ def_sc4path = ""
 PMR_LAUNCHPATH = None
 PMR_LAUNCHRESW = None
 PMR_LAUNCHRESH = None
-PMR_SERVERPATH = "http://pmr.j5.io/"
+PMR_SERVERPATH = "http://api.getpmr.com/"
 PMR_CUSTOMPATH = None
 
 def get_pmr_path(filename):
