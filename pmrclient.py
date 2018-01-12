@@ -269,7 +269,7 @@ class PMRClient(wx.Frame):
 		settingsdialog.Destroy()
 
 	def onClose(self, event):
-		self.listworker.join(5)
+		#self.listworker.join(5)
 		wx.Exit()
 
 class PMRClientSettings(wx.Dialog):
