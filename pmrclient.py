@@ -507,10 +507,11 @@ class PMRClientAuthenticator(wx.Dialog):
 		saveduser = keyring.get_password("pmrsystem", "pmr-user")
 		savedpass = keyring.get_password("pmrsystem", "pmr-pass")
 
-		self.usernametc.SetValue(saveduser)
-		self.passwordtc.SetValue(savedpass)
-
-		if saveduser or savedpass:
+		if saveduser and savedpass:
+			saveduser = str(saveduser)
+			savedpass = str(savedpass)
+			self.usernametc.SetValue(saveduser)
+			self.passwordtc.SetValue(savedpass)
 			self.rememberpass.SetValue(True)
 
 	def SetCredentials(self, event = None):
