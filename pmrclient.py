@@ -238,13 +238,16 @@ class PMRClient(wx.Frame):
 
 				execpath = None
 
-				if os.path.exists(os.path.join(os.sep, "Program Files (x86)", "Steam", "steamapps", "common", "SimCity 4 Deluxe")):
+				if os.path.exists(os.path.join("\\", "Program Files (x86)", "Steam", "steamapps", "common", "SimCity 4 Deluxe")):
 					execpath = r'"C:\Program Files (x86)\Steam\Steam.exe" -applaunch 24780'
+				elif os.path.exists(os.path.join("\\", "Program Files", "Steam", "steamapps", "common", "SimCity 4 Deluxe")):
+					execpath = r'"C:\Program Files\Steam\Steam.exe" -applaunch 24780'
 				else:
 					for possiblepath in possiblepaths:
-						if os.path.exists(possiblepath):
-							execpath = r'"' + possiblepath + '"'
-							break
+						if possiblepath:
+							if os.path.exists(possiblepath):
+								execpath = r'"' + possiblepath + '"'
+								break
 
 				if not execpath:
 					self.WarnError("SimCity 4 was not found\n\nThe PMR Launcher could not find your installation of SimCity 4. If you have installed it to a custom directory, please provide the full path to the 'SimCity 4.exe' file under 'SC4 Settings...'")
