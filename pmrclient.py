@@ -238,26 +238,53 @@ class PMRClient(wx.Frame):
 				]
 
 				execpath = None
+				args = ['-UserDir:"' + PMR_LAUNCHPATH + '"', '-intro:off', '-w', '-CustomResolution:enabled', '-r' + str(PMR_LAUNCHRESW) + 'x' + str(PMR_LAUNCHRESH) + 'x32']
+				issteam = False
 
 				if os.path.exists(os.path.join("\\", "Program Files (x86)", "Steam", "steamapps", "common", "SimCity 4 Deluxe")):
-					execpath = r'"C:\Program Files (x86)\Steam\Steam.exe" -applaunch 24780'
+					execpath = r'"C:\Program Files (x86)\Steam\Steam.exe"'
+					issteam = True
 				elif os.path.exists(os.path.join("\\", "Program Files", "Steam", "steamapps", "common", "SimCity 4 Deluxe")):
-					execpath = r'"C:\Program Files\Steam\Steam.exe" -applaunch 24780'
+					execpath = r'"C:\Program Files\Steam\Steam.exe"'
+					issteam = True
 				else:
 					for possiblepath in possiblepaths:
 						if possiblepath:
-							if os.path.exists(possiblepath):
+							if os.path.isfile(possiblepath):
 								execpath = r'"' + possiblepath + '"'
 								break
 
+				print execpath
+
 				if not execpath:
 					self.WarnError("SimCity 4 was not found\n\nThe PMR Launcher could not find your installation of SimCity 4. If you have installed it to a custom directory, please provide the full path to the 'SimCity 4.exe' file under 'SC4 Settings...'")
-					self.onClose(None)
+					self.ClearSelection()
+					return False
 
-				args = r'' + execpath + ' -UserDir:"' + PMR_LAUNCHPATH + '" -intro:off -w -CustomResolution:enabled -r' + str(PMR_LAUNCHRESW) + 'x' + str(PMR_LAUNCHRESH) + 'x32'
+				args.insert(0, execpath)
+				print args
 
-				#args = r'"C:\Program Files (x86)\Steam\Steam.exe" -applaunch 24780 -UserDir:"' + PMR_LAUNCHPATH + '" -intro:off -w -CustomResolution:enabled -r' + str(PMR_LAUNCHRESW) + 'x' + str(PMR_LAUNCHRESH) + 'x32'
-				subprocess.call(args, shell=False)
+# args = r'"C:\Program Files (x86)\Steam\Steam.exe" -applaunch 24780 -UserDir:"' + PMR_LAUNCHPATH + '" -intro:off -w -CustomResolution:enabled -r' + str(PMR_LAUNCHRESW) + 'x' + str(PMR_LAUNCHRESH) + 'x32'
+# 					try:
+# 						p = subprocess.Popen([args])
+# 					except:
+# 					self.WarnError("The PMR Launcher does not have permission to launch SimCity 4\n\nPlease try again, and run the launcher as an administrator if possible.")
+# 					return False
+				#p = subprocess.Popen([args])
+				
+				if issteam:
+					flatargs = r'' + execpath + ' -applaunch 24780 -UserDir:"' + PMR_LAUNCHPATH + '" -intro:off -w -CustomResolution:enabled -r' + str(PMR_LAUNCHRESW) + 'x' + str(PMR_LAUNCHRESH) + 'x32'
+					try:
+						subprocess.call(flatargs, shell=False)
+					except:
+						self.WarnError("The PMR Launcher does not have permission to launch SimCity 4\n\nPlease make sure SimCity 4 is not already running and try again. You should also try to run the launcher as an administrator if possible.")
+						return False
+				else:
+					try:
+						p = subprocess.Popen([args])
+					except:
+						self.WarnError("The PMR Launcher does not have permission to launch SimCity 4\n\nPlease make sure SimCity 4 is not already running and try again. You should also try to run the launcher as an administrator if possible.")
+						return False
 
 				regioninspector = PMRClientRegionInspector(None,self.selectedregion)
 				self.Hide()
