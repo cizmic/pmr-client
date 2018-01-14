@@ -77,6 +77,7 @@ class PMRClient(wx.Frame):
 		global PMR_LAUNCHPATH
 		global PMR_LAUNCHRESW
 		global PMR_LAUNCHRESH
+		global PMR_CUSTOMPATH
 		
 		# Load configuration file, or create one if it doesn't exist
 		configpath = get_pmr_path("config.ini")
@@ -374,6 +375,11 @@ class PMRClientSettings(wx.Dialog):
 		self.Close(0)
 
 	def onSave(self, event):
+		global PMR_LAUNCHPATH
+		global PMR_LAUNCHRESW
+		global PMR_LAUNCHRESH
+		global PMR_CUSTOMPATH
+
 		config = ConfigParser.RawConfigParser()
 
 		try:
@@ -407,6 +413,14 @@ class PMRClientSettings(wx.Dialog):
 		config.set('launcher', 'resw', self.reswtc.GetValue())
 		config.set('launcher', 'resh', self.reshtc.GetValue())
 		config.set('launcher', 'sc4path', self.sc4pathtc.GetValue())
+		
+		try:
+			PMR_LAUNCHPATH = config.get('launcher', 'path')
+			PMR_LAUNCHRESW = config.get('launcher', 'resw')
+			PMR_LAUNCHRESH = config.get('launcher', 'resh')
+			PMR_CUSTOMPATH = config.get('launcher', 'sc4path')
+		except:
+			pass
 
 		with open(get_pmr_path("config.ini"), 'wb') as configfile:
 			config.write(configfile)
