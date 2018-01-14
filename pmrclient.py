@@ -305,6 +305,10 @@ class PMRClient(wx.Frame):
 		#self.listworker.join(5)
 		wx.Exit()
 
+	def ClearSelection(self):
+		for x in xrange(0, self.regionlist.GetItemCount(), 1):
+			self.regionlist.Select(x, on=0)
+
 class PMRClientSettings(wx.Dialog):
 	def __init__(self, parent):
 		super(PMRClientSettings, self).__init__(parent, style=wx.CAPTION)
