@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "PMR Launcher"
-#define MyAppVersion "Release Candidate 2"
+#define MyAppVersion "Release Candidate 3"
 #define MyAppPublisher "Julian Cizmic"
 #define MyAppURL "http://getpmr.com/"
 #define MyAppExeName "pmrclient.exe"
@@ -21,10 +21,10 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={userdocs}\SimCity 4\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-RC2\License.txt
+LicenseFile=C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-RC3\License.txt
 OutputDir=C:\Users\Julian\Desktop\mak sc4\PMR Client\setupbuilds
 OutputBaseFilename=PMR Setup
-SetupIconFile=C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-RC2\resources\icon.ico
+SetupIconFile=C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-RC3\resources\icon.ico
 Compression=lzma
 SolidCompression=yes
 PrivilegesRequired=lowest
@@ -36,8 +36,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
-Source: "C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-RC2\pmrclient.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-RC2\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-RC3\pmrclient.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-RC3\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
