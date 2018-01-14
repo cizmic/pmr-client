@@ -40,7 +40,7 @@ setup(
 			"packages": ["keyring.backends"],
 			"optimize": 2,
 			"compressed": True,
-			"excludes": ["doctest", "pdb", "difflib", "inspect", "_ssl"]
+			"excludes": ["doctest", "pdb", "difflib", "inspect", "_ssl", "Tkinter", "tc"]
 		}
 	},
 	data_files=find_data_files('resources','resources',['*'])
