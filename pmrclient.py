@@ -234,7 +234,9 @@ class PMRClient(wx.Frame):
 				possiblepaths = [
 					os.path.join(os.sep, "Program Files (x86)\Maxis\SimCity 4 Deluxe\Apps\SimCity 4.exe"),
 					os.path.join(os.sep, "Program Files\Maxis\SimCity 4 Deluxe\Apps\SimCity 4.exe"),
-					PMR_CUSTOMPATH
+					PMR_CUSTOMPATH,
+					os.path.join(PMR_CUSTOMPATH, "SimCity 4.exe"),
+					os.path.join(PMR_CUSTOMPATH, "Apps", "SimCity 4.exe")
 				]
 
 				execpath = None
