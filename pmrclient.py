@@ -14,7 +14,7 @@ import zipfile
 import hashlib
 
 s = requests.Session()
-s.headers["User-Agent"] = "PMRClient RC3"
+s.headers["User-Agent"] = "PMRClient RC4"
 
 stagedsaves = []
 
