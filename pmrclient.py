@@ -57,7 +57,7 @@ class PMRClient(wx.Frame):
 
 		self.Prep()
 
-		#self.CheckServer()
+		self.CheckServer()
 		#self.ShowFirstRun()
 		self.StartRefreshList()
 
