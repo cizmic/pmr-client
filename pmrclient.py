@@ -1067,7 +1067,7 @@ class ListingRequestThread(threading.Thread):
 		self._parent = parent
 
 	def run(self):
-		response = requests.get(PMR_SERVERPATH+"getRegionListing.php")
+		response = s.get(PMR_SERVERPATH+"getRegionListing.php")
 		listings = response.json()
 		evt = ListingResponseEvent(myEVT_LISTINGRESPONSE, -1, listings)
 		wx.PostEvent(self._parent, evt)
