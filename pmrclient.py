@@ -1281,10 +1281,7 @@ class PingThread(threading.Thread):
 			resp = s.get(PMR_SERVERPATH+"authPing.php")
 			evt = PongEvent(myEVT_PONG, -1, resp.status_code)
 			wx.PostEvent(self._parent, evt)
-			break
-		
-		time.sleep(2)
-		self.run()
+			time.sleep(2)
 
 	def abort(self):
 		self._runflag = False
@@ -1309,21 +1306,24 @@ class GetMapLoopThread(threading.Thread):
 		self._runflag = True
 
 	def run(self, doloop = True):
-		try:
-			req = s.get(PMR_SERVERPATH+"showRegionMap.php?region_id=" + str(self._regionid), stream=True)
-			req.raise_for_status()
-		#except requests.exceptions.HTTPError as err:
-		except:
-			mapimgdat = -1
-		else:
-			mapimgdat = wx.ImageFromStream(StringIO.StringIO(req.content)).ConvertToBitmap()
+		while self._runflag:
+			try:
+				req = s.get(PMR_SERVERPATH+"showRegionMap.php?region_id=" + str(self._regionid), stream=True)
+				req.raise_for_status()
+			#except requests.exceptions.HTTPError as err:
+			except:
+				mapimgdat = -1
+			else:
+				mapimgdat = wx.ImageFromStream(StringIO.StringIO(req.content)).ConvertToBitmap()
 
-		if self._runflag:
-			evt = MapDataReceivedEvent(myEVT_MAPDATARECEIVED, -1, mapimgdat)
-			wx.PostEvent(self._parent, evt)
-			if doloop:
+			if self._runflag:
+				evt = MapDataReceivedEvent(myEVT_MAPDATARECEIVED, -1, mapimgdat)
+				wx.PostEvent(self._parent, evt)
+			
+			if not doloop:
+				break
+			else:
 				time.sleep(5)
-				self.run()
 
 	def abort(self):
 		self._runflag = False
@@ -1413,7 +1413,9 @@ class PushChangesThread(threading.Thread):
 		global stagedsaves
 		mostrecent = 0
 
-		if self._runflag:
+		while self._runflag == True:
+			time.sleep(1)
+
 			print("looking to push")
 
 			for i, save in enumerate(stagedsaves):
@@ -1460,8 +1462,6 @@ class PushChangesThread(threading.Thread):
 					stagedsaves = []
 
 				os.remove(zfname)	
-		time.sleep(1)
-		self.run() 
 
 	def abort(self):
 		self._runflag = False
