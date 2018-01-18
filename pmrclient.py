@@ -1391,14 +1391,20 @@ class WatchForChangesEventHandler(FileSystemEventHandler):
 	def on_any_event(event):
 		if event.is_directory:
 			return None
-		#elif event.event_type == 'created':
+		elif event.event_type == 'created':
 			# Take any action here when a file is first created.
 			#print "Received created event - %s." % event.src_path
-			#e = {"path": event.src_path, "time": time.time()}
-			#stagedsaves.append(dict(e))
+			for i, save in enumerate(stagedsaves):
+				if save["path"] == event.src_path:
+					return False
+			e = {"path": event.src_path, "time": time.time()}
+			stagedsaves.append(dict(e))
 		elif event.event_type == 'modified':
 			# Taken any action here when a file is modified.
 			#print "Received modified event - %s." % event.src_path
+			for i, save in enumerate(stagedsaves):
+				if save["path"] == event.src_path:
+					return False
 			e = {"path": event.src_path, "time": time.time()}
 			stagedsaves.append(dict(e))
 		print stagedsaves
@@ -1433,7 +1439,8 @@ class PushChangesThread(threading.Thread):
 				zf = zipfile.ZipFile(zfname, "w", zipfile.ZIP_DEFLATED)
 				for i, save in enumerate(stagedsaves):
 					dname = os.path.basename(os.path.normpath(save["path"]))
-					zf.write(save["path"], dname)
+					if os.path.isfile(os.path.normpath(save["path"])):
+						zf.write(save["path"], dname)
 				zf.close()
 
 				#files = {'save': open(zfname, 'rb')}
