@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "PMR Launcher"
-#define MyAppVersion "Release Candidate 4"
+#define MyAppVersion "1.0.0"
 #define MyAppPublisher "Julian Cizmic"
 #define MyAppURL "http://getpmr.com/"
 #define MyAppExeName "pmrclient.exe"
@@ -21,10 +21,10 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={userdocs}\SimCity 4\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-RC4\License.txt
+LicenseFile=C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-1.0\License.txt
 OutputDir=C:\Users\Julian\Desktop\mak sc4\PMR Client\setupbuilds
 OutputBaseFilename=PMR Setup
-SetupIconFile=C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-RC4\resources\icon.ico
+SetupIconFile=C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-1.0\resources\icon.ico
 Compression=lzma
 SolidCompression=yes
 PrivilegesRequired=lowest
@@ -36,9 +36,16 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
-Source: "C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-RC4\pmrclient.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-RC4\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-1.0\pmrclient.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Julian\Desktop\mak sc4\PMR Client\pmrlauncher-1.0\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+
+[InstallDelete]
+Type: filesandordirs; Name: "{userdocs}\SimCity 4\_PMR\Regions"
+Type: filesandordirs; Name: "{userdocs}\SimCity 4\_PMR\Plugins"
+Type: filesandordirs; Name: "{userdocs}\SimCity 4\_PMR\PMRSalvage"
+Type: filesandordirs; Name: "{userdocs}\SimCity 4\_PMR\PMRCache"
+Type: filesandordirs; Name: "{userdocs}\SimCity 4\_PMR\PMRPluginsCache"
 
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\pmrclient.exe"; IconFilename: "{app}\resources\icon.ico"
@@ -46,4 +53,3 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\pmrclient.exe"; IconFilen
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
-

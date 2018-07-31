@@ -33,7 +33,7 @@ setup(
 		"name": "PMR Launcher",
 		"author": "Poppy Multiplayer Regions",
         "description": "PMR Launcher",
-		"version": "0.9.0"
+		"version": "1.0.0"
 	}],
 	options={
 		"py2exe": {
